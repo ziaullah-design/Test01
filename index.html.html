@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scholarship Assessment — 100 Questions</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root{
+    --ink:#11142B;
+    --ink-2:#181C3A;
+    --ink-3:#21255048;
+    --panel:#FFFFFF;
+    --panel-soft:#F4F6FC;
+    --line:#E2E6F2;
+    --muted:#6B7090;
+    --gold:#E3B23C;
+    --gold-soft:#F8E9C7;
+    --good:#1F9D6B;
+    --good-soft:#DDF3E8;
+    --bad:#D94F4F;
+    --bad-soft:#FBE3E3;
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 14% -6%, #283068 0%, transparent 42%),
+      radial-gradient(circle at 108% 96%, #283068 0%, transparent 38%),
+      var(--ink);
+    font-family:'Inter', system-ui, sans-serif;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+
+  .app{
+    width:100%;
+    max-width:760px;
+  }
+
+  /* ---------- Top meta row ---------- */
+  .meta-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    padding:0 4px;
+  }
+  .brand{
+    color:#C9CFEF;
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+  .brand b{color:var(--gold);}
+  .score-pill{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.14);
+    color:#fff;
+    font-size:12.5px;
+    font-weight:600;
+    padding:6px 13px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .score-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+
+  .score-pill.urgent{
+    background:rgba(217,79,79,.18);
+    border-color:rgba(217,79,79,.4);
+  }
+  .score-pill.urgent .dot{
+    background:var(--bad);
+    animation:pulseDot 1s ease-in-out infinite;
+  }
+  @keyframes pulseDot{
+    0%,100%{opacity:1;}
+    50%{opacity:.3;}
+  }
+
+  /* ---------- Progress ---------- */
+  .progress-track{
+    height:6px;
+    background:rgba(255,255,255,.12);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,#E3B23C,#F3D27E);
+    border-radius:999px;
+    transition:width .45s cubic-bezier(.65,0,.35,1);
+  }
+
+  /* ---------- Card ---------- */
+  .card{
+    background:var(--panel);
+    border-radius:24px;
+    padding:38px 38px 32px;
+    box-shadow:0 30px 60px -20px rgba(8,10,30,.55), 0 1px 0 rgba(255,255,255,.04) inset;
+    position:relative;
+    overflow:hidden;
+  }
+  .qnum-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .qnum{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--muted);
+    letter-spacing:.04em;
+  }
+  .qnum em{
+    font-style:normal;
+    color:var(--ink);
+  }
+  .qtag{
+    font-size:11.5px;
+    font-weight:700;
+    color:#A4843E;
+    background:var(--gold-soft);
+    padding:5px 11px;
+    border-radius:999px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+  }
+
+  .question{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:25px;
+    line-height:1.38;
+    color:var(--ink);
+    margin:0 0 28px;
+    min-height:1.4em;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .option{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    text-align:left;
+    background:var(--panel-soft);
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    font-family:'Inter',sans-serif;
+    font-size:15.5px;
+    font-weight:500;
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .15s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option:hover:not(:disabled){
+    border-color:#C7CEEC;
+    background:#EFF2FB;
+  }
+  .option:active:not(:disabled){
+    transform:scale(.985);
+  }
+  .option:disabled{cursor:default;}
+
+  .opt-letter{
+    flex:0 0 32px;
+    height:32px;
+    border-radius:50%;
+    background:var(--ink);
+    color:#fff;
+    font-weight:700;
+    font-size:13.5px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background .2s ease, color .2s ease;
+  }
+  .opt-text{flex:1; line-height:1.4;}
+  .opt-icon{
+    flex:0 0 22px;
+    height:22px;
+    opacity:0;
+    transform:scale(.6);
+    transition:opacity .2s ease, transform .2s ease;
+  }
+
+  /* tap feedback ripple */
+  .option.tapped{
+    animation:tapPulse .28s ease;
+  }
+  @keyframes tapPulse{
+    0%{transform:scale(1);}
+    40%{transform:scale(.965);}
+    100%{transform:scale(1);}
+  }
+
+  .option.correct{
+    background:var(--good-soft);
+    border-color:#9BD8B7;
+  }
+  .option.correct .opt-letter{background:var(--good); color:#fff;}
+  .option.correct .opt-icon{opacity:1; transform:scale(1);}
+
+  .option.incorrect{
+    background:var(--bad-soft);
+    border-color:#EFAFAF;
+  }
+  .option.incorrect .opt-letter{background:var(--bad); color:#fff;}
+  .option.incorrect .opt-icon{opacity:1; transform:scale(1);}
+
+  .option.dim{opacity:.45;}
+
+  /* ---------- Feedback strip ---------- */
+  .feedback{
+    margin-top:22px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    opacity:0;
+    max-height:0;
+    overflow:hidden;
+    transition:opacity .25s ease, max-height .25s ease, margin-top .25s ease;
+  }
+  .feedback.show{
+    opacity:1;
+    max-height:80px;
+    margin-top:22px;
+  }
+  .feedback-msg{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14.5px;
+    font-weight:700;
+  }
+  .feedback-msg.good{color:var(--good);}
+  .feedback-msg.bad{color:var(--bad);}
+  .feedback-msg .sub{
+    color:var(--muted);
+    font-weight:500;
+    font-size:13.5px;
+  }
+
+  .next-btn{
+    flex:0 0 auto;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    padding:13px 24px;
+    border-radius:12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:background .2s ease, transform .15s ease;
+  }
+  .next-btn:hover{background:#2A2F5C;}
+  .next-btn:active{transform:scale(.97);}
+  .next-btn svg{transition:transform .2s ease;}
+  .next-btn:hover svg{transform:translateX(3px);}
+
+  /* ---------- Footer hint ---------- */
+  .hint{
+    text-align:center;
+    color:#9097C2;
+    font-size:12.5px;
+    margin-top:18px;
+    letter-spacing:.02em;
+  }
+
+  /* ---------- Start screen ---------- */
+  .start-screen{
+    text-align:center;
+    padding:18px 8px 6px;
+  }
+  .start-eyebrow{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--gold);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .start-title{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:34px;
+    line-height:1.2;
+    margin:0 0 14px;
+    color:var(--ink);
+  }
+  .start-desc{
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.6;
+    max-width:480px;
+    margin:0 auto 30px;
+  }
+  .start-stats{
+    display:flex;
+    justify-content:center;
+    gap:34px;
+    margin-bottom:32px;
+  }
+  .stat{text-align:center;}
+  .stat-num{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:28px;
+    color:var(--ink);
+  }
+  .stat-label{
+    font-size:11.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    margin-top:2px;
+  }
+  .start-btn{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:15.5px;
+    padding:16px 36px;
+    border-radius:14px;
+    cursor:pointer;
+    transition:transform .15s ease, background .2s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .start-btn:hover{background:#2A2F5C; transform:translateY(-1px);}
+  .start-btn:active{transform:scale(.97);}
+
+  /* ---------- Registration form ---------- */
+  .reg-form{
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    max-width:440px;
+    margin:0 auto;
+  }
+  .field-group{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+  }
+  .field-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    letter-spacing:.01em;
+  }
+  .field-label .opt{
+    color:var(--muted);
+    font-weight:500;
+    font-size:11.5px;
+    text-transform:none;
+  }
+  .field-input{
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    padding:13px 16px;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    background:var(--panel-soft);
+    color:var(--ink);
+    outline:none;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .field-input:focus{
+    border-color:var(--gold);
+    background:#fff;
+  }
+  .field-input.error{
+    border-color:var(--bad);
+  }
+  .field-error{
+    font-size:12px;
+    color:var(--bad);
+    font-weight:600;
+    display:none;
+  }
+  .field-error.show{display:block;}
+  .reg-submit-row{
+    margin-top:6px;
+    display:flex;
+    justify-content:center;
+  }
+
+  /* ---------- Download button on score screen ---------- */
+  .btn-download{
+    background:linear-gradient(135deg,#E3B23C,#D89B2A);
+    color:var(--ink);
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    padding:13px 24px;
+    border-radius:12px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    transition:transform .15s ease, box-shadow .2s ease;
+    box-shadow:0 8px 20px -8px rgba(227,178,60,.6);
+  }
+  .btn-download:hover{transform:translateY(-1px); box-shadow:0 10px 24px -8px rgba(227,178,60,.7);}
+  .btn-download:active{transform:scale(.97);}
+  .btn-download:disabled{opacity:.6; cursor:wait;}
+
+  .candidate-strip{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .cand-chip{
+    background:var(--panel-soft);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:7px 16px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .cand-chip b{color:var(--ink);}
+
+  /* ---------- Score screen ---------- */
+  .score-screen{
+    text-align:center;
+    padding:10px 4px 6px;
+  }
+  .score-ring-wrap{
+    position:relative;
+    width:190px;
+    height:190px;
+    margin:6px auto 26px;
+  }
+  .score-ring-wrap svg{transform:rotate(-90deg);}
+  .score-center{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .score-big{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:44px;
+    color:var(--ink);
+    line-height:1;
+  }
+  .score-of{
+    font-size:13px;
+    color:var(--muted);
+    font-weight:600;
+    margin-top:2px;
+  }
+  .grade-badge{
+    display:inline-block;
+    background:var(--gold-soft);
+    color:#A4843E;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.04em;
+    padding:7px 18px;
+    border-radius:999px;
+    margin-bottom:22px;
+  }
+  .score-title{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:26px;
+    margin:0 0 8px;
+  }
+  .score-sub{
+    color:var(--muted);
+    font-size:14.5px;
+    margin:0 0 30px;
+  }
+  .breakdown{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    margin-bottom:32px;
+    flex-wrap:wrap;
+  }
+  .bd-card{
+    background:var(--panel-soft);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 22px;
+    min-width:110px;
+  }
+  .bd-num{font-family:'Fraunces',serif; font-weight:700; font-size:24px;}
+  .bd-num.good{color:var(--good);}
+  .bd-num.bad{color:var(--bad);}
+  .bd-label{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:3px;}
+
+  .score-actions{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .btn-ghost{
+    background:#fff;
+    border:1.5px solid var(--line);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    padding:13px 22px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:background .2s ease, transform .15s ease;
+  }
+  .btn-ghost:hover{background:var(--panel-soft);}
+  .btn-ghost:active{transform:scale(.97);}
+
+  .hidden{display:none !important;}
+
+  @media (max-width:560px){
+    .card{padding:26px 20px 24px; border-radius:20px;}
+    .question{font-size:21px;}
+    .start-title{font-size:27px;}
+    .start-stats{gap:20px;}
+    .feedback{flex-direction:column; align-items:flex-start; gap:14px;}
+    .next-btn{width:100%; justify-content:center;}
+    .breakdown{gap:12px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="meta-row" id="metaRow">
+    <div class="brand">SCHOLARSHIP <b>ASSESSMENT</b></div>
+    <div style="display:flex; gap:8px;">
+      <div class="score-pill hidden" id="timerPill"><span class="dot" id="timerDot"></span><span id="timerText">90:00</span></div>
+      <div class="score-pill" id="scorePill"><span class="dot"></span><span id="scorePillText">Score 0</span></div>
+    </div>
+  </div>
+
+  <div class="progress-track" id="progressTrack">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="card" id="card">
+
+    <!-- REGISTRATION FORM -->
+    <div class="start-screen" id="regScreen">
+      <div class="start-eyebrow">Before You Begin</div>
+      <h1 class="start-title">Candidate Registration</h1>
+      <p class="start-desc">Please fill in your details below. This information will appear on your downloadable result.</p>
+      <form class="reg-form" id="regForm" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="fName">Full Name</label>
+          <input class="field-input" type="text" id="fName" placeholder="e.g. Ayesha Khan" autocomplete="name">
+          <div class="field-error" id="errName">Please enter your name.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="fFather">Father's Name</label>
+          <input class="field-input" type="text" id="fFather" placeholder="e.g. Imran Khan" autocomplete="off">
+          <div class="field-error" id="errFather">Please enter your father's name.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="fMarks">Previous / Qualifying Marks <span class="opt">(optional)</span></label>
+          <input class="field-input" type="text" id="fMarks" placeholder="e.g. 87% or 870/1000" autocomplete="off">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="fContact">Contact Number</label>
+          <input class="field-input" type="tel" id="fContact" placeholder="e.g. 0300-1234567" autocomplete="tel">
+          <div class="field-error" id="errContact">Please enter a valid contact number.</div>
+        </div>
+        <div class="reg-submit-row">
+          <button type="submit" class="start-btn" id="regSubmitBtn">
+            Continue to Assessment
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- START SCREEN -->
+    <div class="hidden start-screen" id="startScreen">
+      <div class="start-eyebrow">100-Question Comprehensive Assessment</div>
+      <h1 class="start-title">Test your knowledge<br>across six subjects</h1>
+      <p class="start-desc">Biology, Chemistry, Mathematics, English, Computer Science, and General Knowledge. Tap an answer to see instantly whether you're right — your score builds as you go.</p>
+      <div class="start-stats">
+        <div class="stat"><div class="stat-num">100</div><div class="stat-label">Questions</div></div>
+        <div class="stat"><div class="stat-num">1pt</div><div class="stat-label">Per Question</div></div>
+        <div class="stat"><div class="stat-num">~15m</div><div class="stat-label">Est. Time</div></div>
+      </div>
+      <button class="start-btn" id="startBtn">
+        Begin Assessment
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div class="hidden" id="quizScreen">
+      <div class="qnum-row">
+        <div class="qnum">QUESTION <em id="qNumNow">1</em> / 100</div>
+        <div class="qtag" id="qTag">MULTIPLE CHOICE</div>
+      </div>
+      <div class="question" id="questionText"></div>
+      <div class="options" id="optionsContainer"></div>
+
+      <div class="feedback" id="feedback">
+        <div class="feedback-msg" id="feedbackMsg"></div>
+        <button class="next-btn" id="nextBtn">
+          <span id="nextBtnLabel">Next Question</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SCORE SCREEN -->
+    <div class="hidden" id="scoreScreen">
+      <div class="score-screen">
+        <div class="candidate-strip" id="candidateStrip"></div>
+        <div class="score-ring-wrap">
+          <svg width="190" height="190" viewBox="0 0 190 190">
+            <circle cx="95" cy="95" r="82" fill="none" stroke="#EEF0FA" stroke-width="14"/>
+            <circle cx="95" cy="95" r="82" fill="none" stroke="#E3B23C" stroke-width="14"
+              stroke-linecap="round" id="scoreArc" stroke-dasharray="515" stroke-dashoffset="515"/>
+          </svg>
+          <div class="score-center">
+            <div class="score-big" id="scoreBig">0%</div>
+            <div class="score-of" id="scoreOf">0 / 100 correct</div>
+          </div>
+        </div>
+        <div class="grade-badge" id="gradeBadge">GRADE</div>
+        <h2 class="score-title" id="scoreTitle">Assessment Complete</h2>
+        <p class="score-sub" id="scoreSub"></p>
+        <div class="breakdown">
+          <div class="bd-card"><div class="bd-num good" id="bdCorrect">0</div><div class="bd-label">Correct</div></div>
+          <div class="bd-card"><div class="bd-num bad" id="bdWrong">0</div><div class="bd-label">Incorrect</div></div>
+        </div>
+        <div class="score-actions">
+          <button class="btn-ghost" id="reviewBtn">Review Answers</button>
+          <button class="btn-download" id="downloadBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" stroke="#11142B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download Result (PDF)
+          </button>
+          <button class="start-btn" id="retryBtn">Retake Assessment</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="hint hidden" id="hintText">Tap any option to answer — the correct answer is always revealed.</div>
+</div>
+
+<script>
+const QUESTIONS = [
+{"q":"Which type of immunity is mediated by B cells and antibodies?","options":["Cell-mediated immunity","Humoral immunity","Innate immunity","Passive immunity"],"answer":1},
+{"q":"In a class of 40 students, 25 like math, 20 like science, and 10 like both. How many students like only math?","options":["15","20","25","30"],"answer":0},
+{"q":"In a redox reaction, which species is reduced?","options":["The species that gains electrons","The species that loses electrons","The species that is oxidized","The species that is unchanged"],"answer":0},
+{"q":"The first ruler of the Islamic state of India was:","options":["Qutbuddin Aibek","Mahmood Ghaznavi","Qasim Soori","None of the above"],"answer":0},
+{"q":"Choose the correct punctuation for the sentence: \"What time is it\"","options":["What time is it?","What time is it!","What time is it,","What time is it."],"answer":0},
+{"q":"What is the value of the universal gas constant R in the equation PV = nRT?","options":["0.0821 L·atm/mol·K","8.314 J/mol·K","0.0831 L·bar/mol·K","1.987 cal/mol·K"],"answer":1},
+{"q":"Choose the correct sentence:","options":["She don't like coffee","She doesn't like coffee","She not like coffee","He doesn't likes coffee"],"answer":1},
+{"q":"What is the hybridization of the central atom in SF₄?","options":["sp²","sp³","sp³d","sp³d²"],"answer":2},
+{"q":"Which type of spectroscopy is used to study the electronic transitions in molecules?","options":["Infrared (IR) spectroscopy","Nuclear Magnetic Resonance (NMR) spectroscopy","Ultraviolet-visible (UV-Vis) spectroscopy","Mass spectrometry"],"answer":2},
+{"q":"CD-ROM stands for:","options":["Compactable Read Only Memory","Compact Data Read Only Memory","Compactable Disk Read Only Memory","Compact Disk Read Only Memory"],"answer":3},
+{"q":"What is the primary role of the smooth endoplasmic reticulum (ER) in cells?","options":["Protein synthesis","Lipid synthesis and detoxification","Carbohydrate metabolism","Cellular respiration"],"answer":1},
+{"q":"What is the molecular geometry of CH₄ (methane)?","options":["Trigonal planar","Tetrahedral","Linear","Bent"],"answer":1},
+{"q":"VGA stands for:","options":["Volatile Graphics Array","Video Graphics Adapter","Visual Graphics Array","Video Graphics Array"],"answer":3},
+{"q":"Parliament of Japan is called:","options":["Diet","Parliament","Intellectuals","None"],"answer":0},
+{"q":"Choose the correctly spelled word:","options":["Accommodate","Acommodate","Accomodate","Accommadate"],"answer":0},
+{"q":"If a box contains 4 red balls, 3 green balls, and 5 blue balls, what is the probability of picking a green ball?","options":["3/12","3/10","3/8","3/6"],"answer":1},
+{"q":"Read the sentence and choose the correct meaning: \"The children played outside until the sun went down.\"","options":["The children played inside.","The children played until dark.","The children stopped playing when the sun came up.","The children played in the rain."],"answer":1},
+{"q":"Which type of reaction involves the exchange of ions between two compounds in aqueous solution?","options":["Synthesis","Decomposition","Single replacement","Double replacement"],"answer":3},
+{"q":"What is the correct IUPAC name for CH₃–CH₂–CH₂–CH₂–CH₃?","options":["Pentane","Butane","Hexane","Heptane"],"answer":0},
+{"q":"What is the primary function of the Krebs cycle (Citric Acid Cycle)?","options":["ATP synthesis","Glucose breakdown","Production of NADH and FADH₂","Conversion of pyruvate to lactic acid"],"answer":2},
+{"q":"What is the synonym of \"happy\"?","options":["Sad","Joyful","Angry","Tired"],"answer":1},
+{"q":"a³ − 27 =","options":["(a − 3)(a² + 3a + 9)","(a − 3)(a² + 3a + 12)","(a − 3)(a² + 3a + 3)","None"],"answer":0},
+{"q":"Which of the following compounds exhibits hydrogen bonding?","options":["CH₄","H₂S","NH₃","CO₂"],"answer":2},
+{"q":"Universal Child Day is observed on:","options":["20 November","21 November","22 November","28 November"],"answer":0},
+{"q":"Which type of RNA is responsible for carrying amino acids to the ribosome during translation?","options":["mRNA","tRNA","rRNA","snRNA"],"answer":1},
+{"q":"In the sentence \"She writes neatly,\" what does the word \"neatly\" describe?","options":["The subject","The object","The verb","The adjective"],"answer":2},
+{"q":"A matrix is said to be a row matrix if it has only:","options":["Two rows","Three rows","Four rows","None of the above (one row)"],"answer":3},
+{"q":"What is the empirical formula of C₆H₁₂O₆?","options":["C₁H₂O","C₂H₄O₂","C₁H₂O₁","C₆H₁₂O₆"],"answer":0},
+{"q":"The rate of a reaction doubles when the concentration of reactant is increased by a factor of 4. What is the order of the reaction?","options":["0","1","2","4"],"answer":1},
+{"q":"A train travels 120 miles in 2 hours. How long will it take to travel 300 miles at the same speed?","options":["4 hours","5 hours","6 hours","8 hours"],"answer":1},
+{"q":"Which of the following is not a characteristic of an ideal gas?","options":["No intermolecular forces","Elastic collisions","Occupies no volume","High molecular mass"],"answer":3},
+{"q":"What is the primary purpose of the electron transport chain in cellular respiration?","options":["Production of ATP","Generation of NADH","Reduction of oxygen to water","Oxidation of glucose"],"answer":0},
+{"q":"Which compound is a Lewis acid?","options":["NH₃","H₂O","AlCl₃","CH₄"],"answer":2},
+{"q":"The cell wall was discovered by:","options":["Robert Brown","Robert Hooke","Robert Croose","Both A & B"],"answer":1},
+{"q":"Which phase of the cell cycle is characterized by DNA replication?","options":["G1 phase","S phase","G2 phase","M phase"],"answer":1},
+{"q":"Identify the correct form of the verb: \"They ______ to the park every weekend.\"","options":["Go","Goes","Going","Gone"],"answer":0},
+{"q":"Which of the following structures is responsible for the synthesis of rRNA in eukaryotic cells?","options":["Ribosome","Nucleolus","Golgi apparatus","Endoplasmic reticulum"],"answer":1},
+{"q":"Which law states that the volume of a gas is directly proportional to its temperature, assuming constant pressure?","options":["Boyle's Law","Charles's Law","Avogadro's Law","Gay-Lussac's Law"],"answer":1},
+{"q":"Add (8 + 9i) + (5 + 2i).","options":["13 + 10i","11 + 11i","13 + 13i","13 + 11i"],"answer":3},
+{"q":"Which of the following compounds has a trigonal planar geometry?","options":["NH₃","CH₄","BF₃","H₂O"],"answer":2},
+{"q":"Choose the word that means the opposite of \"difficult\":","options":["Easy","Hard","Complicated","Challenging"],"answer":0},
+{"q":"Which of the following processes involves the breakdown of glucose without the use of oxygen?","options":["Fermentation","Glycolysis","Krebs cycle","Oxidative phosphorylation"],"answer":1},
+{"q":"What type of bond is formed between two atoms with a large difference in electronegativity?","options":["Covalent bond","Ionic bond","Metallic bond","Hydrogen bond"],"answer":1},
+{"q":"What is the pH of a 0.01 M NaOH solution?","options":["12","13","14","11"],"answer":1},
+{"q":"WAN stands for:","options":["Wide Area Network","Wireless Area Network","Wap Area Network","Wide Array Net"],"answer":0},
+{"q":"If the sum of three numbers is 60 and two of the numbers are 10 and 20, what is the third number?","options":["20","25","30","35"],"answer":2},
+{"q":"In human genetics, what is the expected phenotypic ratio of a dihybrid cross involving two heterozygous individuals for two traits (both traits exhibiting complete dominance)?","options":["3:1","9:3:3:1","1:2:1","1:1"],"answer":1},
+{"q":"What is the term for the exchange of genetic material between homologous chromosomes during meiosis?","options":["Independent assortment","Crossing over","Genetic recombination","Chromosomal mutation"],"answer":1},
+{"q":"If the average of four numbers is 25, what is their total sum?","options":["75","80","90","100"],"answer":3},
+{"q":"Select the word that best completes the sentence: \"She __________ a beautiful painting.\"","options":["draw","draws","drew","drawing"],"answer":2},
+{"q":"The brain of any computer system is:","options":["ALU","Memory","CPU","Control unit"],"answer":2},
+{"q":"In which type of reaction does a single compound break down into two or more products?","options":["Synthesis","Decomposition","Single replacement","Double replacement"],"answer":1},
+{"q":"What is the oxidation state of sulfur in H₂SO₄?","options":["+2","+4","+6","–2"],"answer":2},
+{"q":"What is the primary function of the endoplasmic reticulum?","options":["Energy production","Protein synthesis and processing","Cellular respiration","Photosynthesis"],"answer":1},
+{"q":"Who was the first captain of the Pakistan cricket team?","options":["Sikandar","Abdul Hafeez Kardar","Abdul Haleem Sangar","None"],"answer":1},
+{"q":"Eubacterium isolatum dates back:","options":["3500 years back","3400 years back","2300 years back","3300 years back"],"answer":0},
+{"q":"Which of the following is a colligative property of a solution?","options":["Color","Density","Boiling point elevation","pH"],"answer":2},
+{"q":"Which statement best describes the role of the sigma factor in bacterial transcription?","options":["It stabilizes DNA during replication.","It helps in the initiation of transcription by binding to the promoter region.","It degrades RNA after transcription.","It assists in protein folding."],"answer":1},
+{"q":"The set of whole numbers is:","options":["0, 1, 2, 3, 4, 5, 6...","3, 2, 4, 2, 5","–3, –4, –5, –6","None"],"answer":0},
+{"q":"In a group of 50 people, 20 like chocolate, 15 like vanilla, and 5 like both. How many people like only vanilla?","options":["10","15","20","25"],"answer":0},
+{"q":"Which of the following substances would exhibit the highest boiling point?","options":["CH₄","H₂O","CO₂","NH₃"],"answer":1},
+{"q":"Which of the following best describes the “central dogma” of molecular biology?","options":["DNA → RNA → Protein","RNA → DNA → Protein","Protein → DNA → RNA","DNA → Protein → RNA"],"answer":0},
+{"q":"What is the concentration of Na⁺ ions in a 0.5 M Na₂SO₄ solution?","options":["0.5 M","1.0 M","1.5 M","2.0 M"],"answer":1},
+{"q":"In molecular biology, what does “phosphorylation” refer to?","options":["Addition of a phosphate group to a molecule","Removal of a phosphate group","Formation of phosphodiester bond","Cleavage of phospholipid"],"answer":0},
+{"q":"If 2 pens cost as much as 3 pencils, and 4 pencils cost $12, how much does one pen cost?","options":["$4.5","$6.8","$8.2","$10.5"],"answer":0},
+{"q":"The product of any two odd numbers is:","options":["Even","Odd","Integers","None"],"answer":1},
+{"q":"Which process results in the production of a peptide bond?","options":["Glycolysis","Transcription","Translation","Replication"],"answer":2},
+{"q":"What is the basic unit of heredity?","options":["Chromosome","Gene","Nucleus","DNA"],"answer":1},
+{"q":"A man is 30 years old today. In 5 years, he will be twice as old as he was 10 years ago. How old was he 10 years ago?","options":["10","15","20","25"],"answer":1},
+{"q":"In which part of the cell does glycolysis occur?","options":["Mitochondria","Cytoplasm","Nucleus","Ribosome"],"answer":1},
+{"q":"In the Calvin cycle, which enzyme catalyzes CO₂ fixation?","options":["RuBisCO","Phosphofructokinase","ATP synthase","Aldolase"],"answer":0},
+{"q":"What is the bond angle in a water (H₂O) molecule?","options":["90°","109.5°","120°","104.5°"],"answer":3},
+{"q":"Which type of gene regulation uses small RNA molecules to inhibit translation?","options":["Gene silencing","RNA interference (RNAi)","Epigenetic modification","Operon model"],"answer":1},
+{"q":"Which mutation leads to a premature stop codon?","options":["Missense mutation","Silent mutation","Nonsense mutation","Frameshift mutation"],"answer":2},
+{"q":"Which is the strongest intermolecular force?","options":["Hydrogen bonding","Dipole-dipole","London forces","Ionic bonding"],"answer":3},
+{"q":"If A > B and B > C, which is true?","options":["C > A","A > C","A < C","B < A"],"answer":1},
+{"q":"Which is a characteristic of metals?","options":["High ionization energy","Good conductors of electricity","Brittle","Poor thermal conductivity"],"answer":1},
+{"q":"Dissolving NaCl in water is an example of:","options":["Exothermic","Endothermic","Neutralization","Redox"],"answer":1},
+{"q":"Which organelle is known as the “garbage disposal” of the cell?","options":["Peroxisome","Lysosome","Vacuole","Ribosome"],"answer":1},
+{"q":"If all cats are mammals and some mammals are not dogs, which is true?","options":["All cats are dogs","All cats are mammals","All mammals are cats","No cats are mammals"],"answer":1},
+{"q":"During which phase of meiosis does crossing over occur?","options":["Prophase I","Metaphase I","Anaphase I","Telophase II"],"answer":0},
+{"q":"Telephone was invented by:","options":["Graham Lonkon","Graham Gill","Graham Bell","Robert Whittaker"],"answer":2},
+{"q":"In enzyme kinetics, Km represents:","options":["Maximum rate of enzyme activity","Substrate concentration at which reaction rate is half of Vmax","Total enzyme concentration","Affinity of enzyme for product"],"answer":1},
+{"q":"Which statement is logically equivalent to “If it rains, then the ground will be wet”?","options":["The ground is wet, so it rained","If the ground is not wet, then it did not rain","If it did not rain, then the ground is wet","It did not rain, so the ground is wet"],"answer":1},
+{"q":"What is the primary factor affecting rate of chemical reaction?","options":["Volume","Pressure","Color","Temperature"],"answer":3},
+{"q":"If the sequence is 3, 6, 12, 24, what is the 5th term?","options":["36","48","60","72"],"answer":1},
+{"q":"Which organelle is the powerhouse of the cell?","options":["Nucleus","Mitochondria","Ribosome","Golgi apparatus"],"answer":1},
+{"q":"Identify the subject in: “The cat slept on the mat.”","options":["slept","the","mat","cat"],"answer":3},
+{"q":"Which of the following is NOT a prime number?","options":["2","3","4","7"],"answer":2},
+{"q":"Which macromolecule is the main source of energy for cells?","options":["Proteins","Carbohydrates","Lipids","Nucleic acids"],"answer":1},
+{"q":"If today is Monday, what day will it be in 100 days?","options":["Tuesday","Wednesday","Friday","Sunday"],"answer":1},
+{"q":"Which element has the highest electronegativity?","options":["Fluorine","Chlorine","Oxygen","Nitrogen"],"answer":0},
+{"q":"A book costs $20. With 10% profit, selling price is:","options":["$22","$24","$26","$30"],"answer":0},
+{"q":"Which bond involves sharing of electrons?","options":["Ionic bond","Covalent bond","Metallic bond","Hydrogen bond"],"answer":1},
+{"q":"Function of G2 phase in cell cycle:","options":["DNA replication","Cell growth and preparation for mitosis","Chromosome separation","Cytokinesis"],"answer":1},
+{"q":"Which is a strong acid?","options":["Acetic acid","Hydrochloric acid","Carbonic acid","Phosphoric acid"],"answer":1},
+{"q":"Components of CPU are:","options":["ALU and Mouse","ALU and Control Unit","ALU and Integrated Circuits","Control Unit and Monitor"],"answer":1},
+{"q":"Role of mitotic spindle:","options":["Condense chromosomes","Align chromosomes","Separate sister chromatids","Cytokinesis"],"answer":2},
+{"q":"Function of capsid in viruses:","options":["Replicate DNA","Protect and deliver viral genome","Protein synthesis","Viral assembly"],"answer":1},
+{"q":"Molecular formula for empirical CH₂, molar mass 56 g/mol:","options":["C₄H₈","C₆H₁₂","C₇H₁₄","C₈H₁₆"],"answer":3}
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+let userAnswers = new Array(QUESTIONS.length).fill(null);
+let candidate = { name:'', father:'', marks:'', contact:'' };
+
+const regScreen = document.getElementById('regScreen');
+const regForm = document.getElementById('regForm');
+const startScreen = document.getElementById('startScreen');
+const quizScreen = document.getElementById('quizScreen');
+const scoreScreen = document.getElementById('scoreScreen');
+const startBtn = document.getElementById('startBtn');
+const questionText = document.getElementById('questionText');
+const optionsContainer = document.getElementById('optionsContainer');
+const qNumNow = document.getElementById('qNumNow');
+const feedback = document.getElementById('feedback');
+const feedbackMsg = document.getElementById('feedbackMsg');
+const nextBtn = document.getElementById('nextBtn');
+const nextBtnLabel = document.getElementById('nextBtnLabel');
+const progressFill = document.getElementById('progressFill');
+const scorePillText = document.getElementById('scorePillText');
+const hintText = document.getElementById('hintText');
+const candidateStrip = document.getElementById('candidateStrip');
+const downloadBtn = document.getElementById('downloadBtn');
+const timerPill = document.getElementById('timerPill');
+const timerText = document.getElementById('timerText');
+
+const QUIZ_DURATION_SECONDS = 90 * 60; // 90 minutes
+let timeRemaining = QUIZ_DURATION_SECONDS;
+let timerInterval = null;
+
+function formatTime(totalSeconds){
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function startTimer(){
+  timeRemaining = QUIZ_DURATION_SECONDS;
+  timerText.textContent = formatTime(timeRemaining);
+  timerPill.classList.remove('hidden', 'urgent');
+
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    if (timeRemaining <= 0){
+      timeRemaining = 0;
+      timerText.textContent = '00:00';
+      stopTimer();
+      showScore();
+      return;
+    }
+    timerText.textContent = formatTime(timeRemaining);
+    if (timeRemaining <= 60){
+      timerPill.classList.add('urgent');
+    }
+  }, 1000);
+}
+
+function stopTimer(){
+  if (timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timerPill.classList.add('hidden');
+}
+
+
+const letters = ['A','B','C','D'];
+
+const checkIcon = `<svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="12" r="11" fill="#1F9D6B"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const crossIcon = `<svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="12" r="11" fill="#D94F4F"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function renderQuestion(idx){
+  answered = false;
+  const item = QUESTIONS[idx];
+  qNumNow.textContent = idx + 1;
+  questionText.textContent = item.q;
+  optionsContainer.innerHTML = '';
+  feedback.classList.remove('show');
+
+  item.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `
+      <span class="opt-letter">${letters[i]}</span>
+      <span class="opt-text">${opt}</span>
+      <span class="opt-icon"></span>
+    `;
+    btn.addEventListener('click', () => selectAnswer(i, btn));
+    optionsContainer.appendChild(btn);
+  });
+
+  progressFill.style.width = ((idx) / QUESTIONS.length * 100) + '%';
+  nextBtnLabel.textContent = (idx === QUESTIONS.length - 1) ? 'See Results' : 'Next Question';
+}
+
+function selectAnswer(selectedIdx, btnEl){
+  if (answered) return;
+  answered = true;
+  userAnswers[current] = selectedIdx;
+
+  const item = QUESTIONS[current];
+  const correctIdx = item.answer;
+  const allOptions = optionsContainer.querySelectorAll('.option');
+
+  btnEl.classList.add('tapped');
+
+  allOptions.forEach((opt, i) => {
+    opt.disabled = true;
+    const iconSpan = opt.querySelector('.opt-icon');
+    if (i === correctIdx){
+      opt.classList.add('correct');
+      iconSpan.innerHTML = checkIcon;
+    } else if (i === selectedIdx){
+      opt.classList.add('incorrect');
+      iconSpan.innerHTML = crossIcon;
+    } else {
+      opt.classList.add('dim');
+    }
+  });
+
+  const isCorrect = selectedIdx === correctIdx;
+  if (isCorrect){
+    score++;
+    feedbackMsg.className = 'feedback-msg good';
+    feedbackMsg.innerHTML = `${checkIcon}<span>Correct! <span class="sub">Well done.</span></span>`;
+  } else {
+    feedbackMsg.className = 'feedback-msg bad';
+    feedbackMsg.innerHTML = `${crossIcon}<span>Not quite. <span class="sub">Correct answer: ${letters[correctIdx]}</span></span>`;
+  }
+
+  scorePillText.textContent = 'Score ' + score;
+  feedback.classList.add('show');
+  progressFill.style.width = ((current + 1) / QUESTIONS.length * 100) + '%';
+}
+
+function defaultNextHandler(){
+  if (current < QUESTIONS.length - 1){
+    current++;
+    renderQuestion(current);
+  } else {
+    showScore();
+  }
+}
+nextBtn.onclick = defaultNextHandler;
+
+function showScore(){
+  stopTimer();
+  quizScreen.classList.add('hidden');
+  scoreScreen.classList.remove('hidden');
+  hintText.classList.add('hidden');
+  progressFill.style.width = '100%';
+  renderCandidateStrip();
+
+  const pct = Math.round((score / QUESTIONS.length) * 100);
+  const wrong = QUESTIONS.length - score;
+
+  document.getElementById('bdCorrect').textContent = score;
+  document.getElementById('bdWrong').textContent = wrong;
+  document.getElementById('scoreOf').textContent = `${score} / ${QUESTIONS.length} correct`;
+
+  let grade, title, sub;
+  if (pct >= 90){ grade='OUTSTANDING'; title='Exceptional Performance'; sub='You have a strong command of nearly every topic area.'; }
+  else if (pct >= 75){ grade='STRONG PASS'; title='Excellent Work'; sub='A solid, well-rounded performance across subjects.'; }
+  else if (pct >= 60){ grade='PASS'; title='Good Effort'; sub='A respectable score with clear room to sharpen a few areas.'; }
+  else if (pct >= 40){ grade='NEEDS REVIEW'; title='Keep Practicing'; sub='Review the topics below and try again to improve your score.'; }
+  else { grade='RETRY RECOMMENDED'; title="Let's Build From Here"; sub='Revisit the core concepts, then take another attempt.'; }
+
+  document.getElementById('gradeBadge').textContent = grade;
+  document.getElementById('scoreTitle').textContent = title;
+  document.getElementById('scoreSub').textContent = sub;
+
+  // Animate ring + count-up
+  const circumference = 2 * Math.PI * 82;
+  const arc = document.getElementById('scoreArc');
+  arc.setAttribute('stroke-dasharray', circumference);
+  arc.style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.65,0,.35,1)';
+  requestAnimationFrame(() => {
+    const offset = circumference * (1 - pct / 100);
+    arc.style.strokeDashoffset = offset;
+  });
+
+  const bigEl = document.getElementById('scoreBig');
+  let cur = 0;
+  const step = Math.max(1, Math.round(pct / 40));
+  const timer = setInterval(() => {
+    cur += step;
+    if (cur >= pct){ cur = pct; clearInterval(timer); }
+    bigEl.textContent = cur + '%';
+  }, 22);
+}
+
+document.getElementById('retryBtn').addEventListener('click', () => {
+  current = 0; score = 0; answered = false;
+  userAnswers = new Array(QUESTIONS.length).fill(null);
+  scorePillText.textContent = 'Score 0';
+  scoreScreen.classList.add('hidden');
+  quizScreen.classList.remove('hidden');
+  hintText.classList.remove('hidden');
+  nextBtn.onclick = defaultNextHandler;
+  renderQuestion(0);
+  startTimer();
+});
+
+document.getElementById('reviewBtn').addEventListener('click', () => {
+  scoreScreen.classList.add('hidden');
+  quizScreen.classList.remove('hidden');
+  hintText.classList.remove('hidden');
+  current = 0;
+  renderReview(0);
+});
+
+function renderReview(idx){
+  const item = QUESTIONS[idx];
+  const userIdx = userAnswers[idx];
+  qNumNow.textContent = idx + 1;
+  questionText.textContent = item.q;
+  optionsContainer.innerHTML = '';
+  feedback.classList.add('show');
+
+  const isCorrect = userIdx === item.answer;
+  feedbackMsg.className = 'feedback-msg ' + (isCorrect ? 'good' : 'bad');
+  feedbackMsg.innerHTML = isCorrect
+    ? `${checkIcon}<span>You answered correctly.</span>`
+    : `${crossIcon}<span>You answered ${userIdx !== null ? letters[userIdx] : '—'}. <span class="sub">Correct: ${letters[item.answer]}</span></span>`;
+
+  item.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.disabled = true;
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'opt-icon';
+    if (i === item.answer){ btn.classList.add('correct'); iconSpan.innerHTML = checkIcon; }
+    else if (i === userIdx){ btn.classList.add('incorrect'); iconSpan.innerHTML = crossIcon; }
+    else { btn.classList.add('dim'); }
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text">${opt}</span>`;
+    btn.appendChild(iconSpan);
+    optionsContainer.appendChild(btn);
+  });
+
+  nextBtnLabel.textContent = (idx === QUESTIONS.length - 1) ? 'Back to Results' : 'Next';
+  progressFill.style.width = ((idx + 1) / QUESTIONS.length * 100) + '%';
+
+  nextBtn.onclick = () => {
+    if (idx < QUESTIONS.length - 1){
+      renderReview(idx + 1);
+    } else {
+      exitReview();
+    }
+  };
+}
+
+function exitReview(){
+  quizScreen.classList.add('hidden');
+  scoreScreen.classList.remove('hidden');
+  hintText.classList.add('hidden');
+  nextBtn.onclick = defaultNextHandler;
+}
+
+startBtn.addEventListener('click', () => {
+  startScreen.classList.add('hidden');
+  quizScreen.classList.remove('hidden');
+  hintText.classList.remove('hidden');
+  renderQuestion(0);
+  startTimer();
+});
+
+// ---------------- Registration form ----------------
+function validateField(input, errorEl, validator){
+  const val = input.value.trim();
+  const valid = validator(val);
+  if (!valid){
+    input.classList.add('error');
+    errorEl.classList.add('show');
+  } else {
+    input.classList.remove('error');
+    errorEl.classList.remove('show');
+  }
+  return valid;
+}
+
+regForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const nameInput = document.getElementById('fName');
+  const fatherInput = document.getElementById('fFather');
+  const marksInput = document.getElementById('fMarks');
+  const contactInput = document.getElementById('fContact');
+
+  const nameOk = validateField(nameInput, document.getElementById('errName'), v => v.length > 1);
+  const fatherOk = validateField(fatherInput, document.getElementById('errFather'), v => v.length > 1);
+  const contactOk = validateField(contactInput, document.getElementById('errContact'), v => v.replace(/[^0-9]/g,'').length >= 7);
+
+  if (!nameOk || !fatherOk || !contactOk) return;
+
+  candidate.name = nameInput.value.trim();
+  candidate.father = fatherInput.value.trim();
+  candidate.marks = marksInput.value.trim();
+  candidate.contact = contactInput.value.trim();
+
+  regScreen.classList.add('hidden');
+  startScreen.classList.remove('hidden');
+});
+
+// ---------------- Candidate strip on score screen ----------------
+function renderCandidateStrip(){
+  const chips = [
+    { label: 'Name', value: candidate.name },
+    { label: "Father's Name", value: candidate.father },
+    { label: 'Contact', value: candidate.contact },
+  ];
+  if (candidate.marks) chips.push({ label: 'Qualifying Marks', value: candidate.marks });
+
+  candidateStrip.innerHTML = chips.map(c =>
+    `<span class="cand-chip">${c.label}: <b>${escapeHtml(c.value)}</b></span>`
+  ).join('');
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ---------------- PDF generation ----------------
+downloadBtn.addEventListener('click', () => {
+  downloadBtn.disabled = true;
+  const originalHTML = downloadBtn.innerHTML;
+  downloadBtn.innerHTML = 'Preparing PDF…';
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    const navy = [17, 20, 43];
+    const gold = [227, 178, 60];
+    const muted = [107, 112, 144];
+    const good = [31, 157, 107];
+    const bad = [217, 79, 79];
+    const line = [226, 230, 242];
+
+    const pct = Math.round((score / QUESTIONS.length) * 100);
+    const wrong = QUESTIONS.length - score;
+
+    let grade;
+    if (pct >= 90) grade = 'OUTSTANDING';
+    else if (pct >= 75) grade = 'STRONG PASS';
+    else if (pct >= 60) grade = 'PASS';
+    else if (pct >= 40) grade = 'NEEDS REVIEW';
+    else grade = 'RETRY RECOMMENDED';
+
+    // Header band
+    doc.setFillColor(...navy);
+    doc.rect(0, 0, pageW, 130, 'F');
+
+    doc.setTextColor(...gold);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('SCHOLARSHIP ASSESSMENT', 50, 50);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('times', 'bold');
+    doc.setFontSize(26);
+    doc.text('Official Result Certificate', 50, 80);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.setTextColor(200, 205, 230);
+    doc.text('100-Question Comprehensive Assessment  •  Generated ' + new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' }), 50, 100);
+
+    // Candidate details box
+    let y = 165;
+    doc.setTextColor(...muted);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('CANDIDATE DETAILS', 50, y);
+
+    y += 10;
+    doc.setDrawColor(...line);
+    doc.line(50, y, pageW - 50, y);
+
+    const details = [
+      ['Full Name', candidate.name],
+      ["Father's Name", candidate.father],
+      ['Contact Number', candidate.contact],
+    ];
+    if (candidate.marks) details.push(['Qualifying Marks', candidate.marks]);
+
+    y += 24;
+    details.forEach(([label, value]) => {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...muted);
+      doc.text(label, 50, y);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(...navy);
+      doc.text(String(value || '—'), 220, y);
+      y += 22;
+    });
+
+    // Score summary box
+    y += 18;
+    doc.setFillColor(244, 246, 252);
+    doc.roundedRect(50, y, pageW - 100, 130, 10, 10, 'F');
+
+    const boxTop = y;
+    doc.setFont('times', 'bold');
+    doc.setFontSize(42);
+    doc.setTextColor(...navy);
+    doc.text(pct + '%', 75, boxTop + 60);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(...muted);
+    doc.text(score + ' / ' + QUESTIONS.length + ' correct answers', 75, boxTop + 80);
+
+    // grade badge
+    doc.setFillColor(248, 233, 199);
+    doc.roundedRect(75, boxTop + 92, doc.getTextWidth(grade) + 30, 22, 11, 11, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(164, 132, 62);
+    doc.text(grade, 90, boxTop + 107);
+
+    // mini breakdown right side
+    const rightX = pageW - 220;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(...good);
+    doc.text(String(score), rightX, boxTop + 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...muted);
+    doc.text('CORRECT', rightX, boxTop + 60);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(...bad);
+    doc.text(String(wrong), rightX + 90, boxTop + 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...muted);
+    doc.text('INCORRECT', rightX + 90, boxTop + 60);
+
+    // Footer
+    const footerY = pageH - 60;
+    doc.setDrawColor(...line);
+    doc.line(50, footerY, pageW - 50, footerY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.text('This result was generated automatically upon completion of the assessment.', 50, footerY + 18);
+    doc.text('Total possible score: ' + QUESTIONS.length + ' points  •  1 point per question', 50, footerY + 32);
+
+    const safeName = (candidate.name || 'candidate').replace(/[^a-z0-9]+/gi, '_');
+    doc.save('Result_' + safeName + '.pdf');
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    alert('Sorry, the PDF could not be generated. Please try again.');
+  } finally {
+    downloadBtn.disabled = false;
+    downloadBtn.innerHTML = originalHTML;
+  }
+});
+
+</script>
+</body>
+</html>
